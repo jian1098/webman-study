@@ -9,6 +9,9 @@ use Workerman\Timer;
 use Workerman\Coroutine\Parallel;
 
 // 协程
+// 先修改config/process.php中的eventLoop
+// 相关文档：https://www.workerman.net/doc/webman/coroutine/coroutine.html
+// 注意：数据库、缓存、上下文这些在协程环境中需要使用协程版的扩展！
 class CoroutineController
 {
     // 单个协程
@@ -29,7 +32,7 @@ class CoroutineController
         for ($i = 1; $i < 50; $i++) {
             $parallel->add(function () use ($i, &$data) {
                 echo '协程' . $i . '开始' . PHP_EOL;
-                Timer::sleep(2); // 模拟耗时操作，不能使用sleep(),不然会线程阻塞
+                Timer::sleep(2); // 模拟耗时操作，不能使用php自带的sleep(),不然会线程阻塞
                 $data[] = $i;
                 echo '协程' . $i . '结束' . PHP_EOL;
             });
