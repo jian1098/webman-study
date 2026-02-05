@@ -26,7 +26,9 @@
   "require": {
     "php": ">=8.1",
     "workerman/webman-framework": "^2.1",
-    "monolog/monolog": "^2.0"
+    "monolog/monolog": "^2.0",
+    "webman/openai": "^2.0",
+    "webman/cors": "^1.0"
   },
   "suggest": {
     "ext-event": "For better performance. "

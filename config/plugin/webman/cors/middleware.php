@@ -12,12 +12,8 @@
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
-use Webman\Route;
-
-Route::options('[{path:.+}]', function () {
-    return response('');
-});
-
-
-
-
+return [
+    '' => [
+        \Webman\Cors\CORS::class
+    ]
+];
