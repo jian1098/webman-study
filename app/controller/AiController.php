@@ -21,9 +21,9 @@ class AiController
 
     public function __construct()
     {
-        $this->api = 'https://api.siliconflow.cn';
-        $this->apiKey = 'sk-**************************';
-        $this->model = 'Qwen/Qwen2.5-7B-Instruct';
+        $this->api = getenv('AI_API_URL'); // https://api.siliconflow.cn
+        $this->apiKey = getenv('AI_API_KEY'); // sk-*******
+        $this->model = getenv('AI_MODEL'); // Qwen/Qwen2.5-Coder-7B-Instruct
         $this->systemPrompt = '你是我的女朋友，请用娇羞可爱的语气回答问题';
         $this->chat = new Chat([
             'api' => $this->api,
