@@ -11,7 +11,7 @@ use Workerman\Protocols\Http\Chunk;
  * 
  * 相关文档：https://www.workerman.net/plugin/157
  */
-class AiController
+class WebmanAiController
 {
     protected $api;
     protected $apiKey;
@@ -107,6 +107,6 @@ class AiController
     // 聊天页面
     public function chat(Request $request)
     {
-        return view('index/chat');
+        return view('index/webman_chat');
     }
 }

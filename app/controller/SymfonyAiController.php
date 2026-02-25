@@ -157,7 +157,7 @@ class SymfonyAIController
                 // 使用 Webman 的 Chunk 协议发送数据到前端
                 $connection->send(new Chunk(json_encode([
                     'reply' => $word,
-                    // 'model' => $this->model,
+                    'model' => $this->model,
                 ], JSON_UNESCAPED_UNICODE) . "\n"));
             }
 
