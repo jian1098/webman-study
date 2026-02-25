@@ -454,7 +454,7 @@
                             }
                             
                             if (data.usage) {
-                                tokenUsageEl.textContent = data.usage.total_tokens;
+                                tokenUsageEl.textContent = data.usage;
                             }
 
                             if (data.error) {
@@ -505,7 +505,7 @@
                     addMessage(content, 'ai');
                     
                     if (data.usage) {
-                        tokenUsageEl.textContent = data.usage.total_tokens;
+                        tokenUsageEl.textContent = data.usage;
                     }
                 } else if (data.error) {
                     addMessage(`Error: ${data.error.message || JSON.stringify(data.error)}`, 'ai');

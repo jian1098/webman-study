@@ -46,7 +46,7 @@ class NeuronAiController
 
     public function chatWithStream($connection, $message)
     {
-        $id = Timer::add(0.001, function () use ($connection, &$id, $message) {
+        $id = Timer::add(0.01, function () use ($connection, &$id, $message) {
             Timer::del($id);
             if ($connection->getStatus() !== TcpConnection::STATUS_ESTABLISHED) {
                 return;
@@ -56,7 +56,6 @@ class NeuronAiController
                 $stream = $this->agent->make()->stream(
                     new UserMessage($message)
                 );
-
                 foreach ($stream as $chunk) {
                     // Neuron AI yields JSON strings for usage and regular strings for content
                     $content = $chunk;
@@ -68,26 +67,24 @@ class NeuronAiController
                         continue;
                     }
 
-                    // Check if it's usage data (JSON)
-                    $decoded = json_decode((string) $content, true);
-                    if (is_array($decoded) && isset($decoded['usage'])) {
-                        $connection->send(new Chunk(json_encode([
-                            'event' => 'usage',
-                            'usage' => $decoded['usage'],
-                        ], JSON_UNESCAPED_UNICODE) . "\n"));
-                        continue;
-                    }
-
                     // Otherwise it's regular content
                     $connection->send(new Chunk(json_encode([
-                        'event' => 'message',
                         'reply' => $content,
                         'model' => getenv('AI_MODEL'),
                     ], JSON_UNESCAPED_UNICODE) . "\n"));
                 }
 
-                // Send completion event
-                $connection->send(new Chunk(''));
+                // 获取流结束后的最终响应对象，其中包含累计消耗
+                $response = $stream->getReturn();
+                $usage = $response->getUsage();
+                $totalUsage = $usage ? $usage->getTotal() : 0;
+
+                // Send completion event with total usage
+                $connection->send(new Chunk(json_encode([
+                    'event' => 'completed',
+                    'reply' => '',
+                    'usage' => $totalUsage,
+                ], JSON_UNESCAPED_UNICODE) . "\n"));
 
                 // Final empty chunk to signal end of stream
                 $connection->send(new Chunk(''));
@@ -113,9 +110,12 @@ class NeuronAiController
     {
         try {
             $reply = $this->agent->make()->chat(new UserMessage($message));
+            $usage = $reply->getUsage();
+            $totalUsage = $usage ? $usage->getTotal() : 0;
             $connection->send(json_encode([
                 'reply' => $reply->getContent(),
                 'model' => getenv('AI_MODEL'),
+                'usage' => $totalUsage,
             ], JSON_UNESCAPED_UNICODE));
         } catch (\Exception $e) {
             $connection->send(json_encode([
