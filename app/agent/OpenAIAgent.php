@@ -6,30 +6,40 @@
 declare(strict_types=1);
 namespace app\agent;
 
-use app\agent\providers\OpenAiClient;
+use GuzzleHttp\Handler\StreamHandler;
+use GuzzleHttp\HandlerStack;
 use NeuronAI\Agent;
 use NeuronAI\Providers\AIProviderInterface;
+use NeuronAI\Providers\HttpClientOptions;
+use NeuronAI\Providers\OpenAILike;
 use NeuronAI\SystemPrompt;
 class OpenAIAgent extends Agent
 {
     /**
      * @desc provider
-     * @author Tinywan(ShaoBo Wan)
      */
     protected function provider(): AIProviderInterface
     {
-        // 这里的apiKey和model需要替换成自己的
-        $apiKey = getenv('AI_API_KEY');
-        $model = getenv('AI_MODEL');
-        return new OpenAiClient(
-            key: $apiKey,
-            model: $model,
+        // Swoole 兼容性处理：强制使用 StreamHandler 避免 CurlMultiHandler 崩溃，且支持流式输出
+        $handler = new StreamHandler();
+        $stack = HandlerStack::create($handler);
+
+        // 这里的apiKey和model需要替换成自己的，我使用的是硅基流动上的模型，所以直接实例化OpenAILike类，根据自己的模型做Provider修改
+        // 支持的AI模型Provider：https://docs.neuron-ai.dev/the-basics/ai-provider#openai
+        return new OpenAILike(
             baseUri: getenv('AI_API_URL'),
+            key: getenv('AI_API_KEY'),
+            model: getenv('AI_MODEL'),
+            parameters: [], // Add custom params (temperature, logprobs, etc)
+            strict_response: false, // Strict structured output
+            httpOptions: new HttpClientOptions(
+                timeout: 30,
+                handler: $stack
+            ),
         );
     }
     /**
      * @desc instructions
-     * @author Tinywan(ShaoBo Wan)
      */
     public function instructions(): string
     {
