@@ -10,7 +10,7 @@ use Workerman\Protocols\Http\Chunk;
 use Workerman\Timer;
 
 /**
- * AI开发
+ * Neuron AI开发
  * 
  * 相关文档：
  * https://docs.neuron-ai.dev/the-basics/ai-provider

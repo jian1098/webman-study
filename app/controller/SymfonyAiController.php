@@ -14,7 +14,9 @@ use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\AI\Platform\Message\MessageBag;
 use Workerman\Protocols\Http\Chunk;
-
+/**
+ * Symfony AI开发
+ */
 // 不同的模型要安装对应模型的扩展，并引用对应的PlatformFactory，自定义模型用Ollama\PlatformFactory,通用平台用Generic\PlatformFactory
 // 支持的模型列表：https://symfony.com/doc/current/ai/components/platform.html#custom-models
 // 平台对应扩展 https://github.com/symfony/ai/blob/main/src/platform/README.md

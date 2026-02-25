@@ -7,7 +7,7 @@ use Webman\Openai\Chat;
 use Workerman\Protocols\Http\Chunk;
 
 /**
- * AI开发
+ * Webman AI开发
  * 
  * 相关文档：https://www.workerman.net/plugin/157
  */
