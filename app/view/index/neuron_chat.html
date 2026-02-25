@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI聊天助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: rgba(255, 255, 255, 0.92);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+        }
+        
+        header {
+            background: linear-gradient(to right, #4b6cb7, #182848);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background-color: #f0f5ff;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="white"/><path d="M0 50 L100 50 M50 0 L50 100" stroke="rgba(240,245,255,0.8)" stroke-width="1"/></svg>');
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 15px;
+            border-radius: 18px;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: linear-gradient(to right, #0072ff, #00c6ff);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background: linear-gradient(to right, #f5f7fa, #e4e7eb);
+            color: #333;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .message-info {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background-color: #f0f5ff;
+            padding: 15px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .typing-indicator span {
+            height: 10px;
+            width: 10px;
+            float: left;
+            margin: 0 2px;
+            background-color: #9E9EA1;
+            display: block;
+            border-radius: 50%;
+            opacity: 0.4;
+        }
+        
+        .typing-indicator span:nth-of-type(1) {
+            animation: typing 1s infinite;
+        }
+        
+        .typing-indicator span:nth-of-type(2) {
+            animation: typing 1s infinite 0.2s;
+        }
+        
+        .typing-indicator span:nth-of-type(3) {
+            animation: typing 1s infinite 0.4s;
+        }
+        
+        @keyframes typing {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); opacity: 0.8; }
+            100% { transform: translateY(0px); }
+        }
+        
+        .input-area {
+            padding: 20px;
+            background-color: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+        
+        textarea {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            resize: none;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+            height: 60px;
+        }
+        
+        textarea:focus {
+            border-color: #4b6cb7;
+            box-shadow: 0 0 0 2px rgba(75, 108, 183, 0.2);
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .send-btn {
+            background: linear-gradient(to right, #4b6cb7, #182848);
+            color: white;
+        }
+        
+        .send-btn:hover {
+            background: linear-gradient(to right, #3a5ca5, #101f3d);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #f0f5ff;
+            padding: 0 15px;
+            border-radius: 12px;
+            height: 60px;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background: linear-gradient(to right, #4b6cb7, #182848);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+        
+        .token-info {
+            font-size: 0.85rem;
+            color: #666;
+            padding: 10px 20px;
+            background-color: #f9f9f9;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .timestamp {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                height: 95vh;
+                border-radius: 15px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+            
+            .input-area {
+                flex-wrap: wrap;
+            }
+            
+            .toggle-container {
+                order: 3;
+                width: 100%;
+                justify-content: center;
+                margin-top: 10px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI聊天助手</h1>
+        </header>
+        
+        <div class="status-bar">
+            <div>模型: <span id="model-name">--</span></div>
+        </div>
+        
+        <div class="chat-container" id="chat-container">
+            <div class="message ai-message">
+                您好！我是AI助手，有什么我可以帮您的吗？
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="input-area">
+            <textarea id="user-input" placeholder="输入您的问题..."></textarea>
+            <button class="send-btn" id="send-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/>
+                </svg>
+                发送
+            </button>
+            <div class="toggle-container">
+                <span>流式输出:</span>
+                <label class="switch">
+                    <input type="checkbox" id="stream-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="token-info">
+            <div>Token使用: <span id="token-usage">0</span></div>
+            <div>响应时间: <span id="response-time">0</span>ms</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8787/NeuronAi/index';
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatContainer = document.getElementById('chat-container');
+            const userInput = document.getElementById('user-input');
+            const sendBtn = document.getElementById('send-btn');
+            const streamToggle = document.getElementById('stream-toggle');
+            const typingIndicator = document.getElementById('typing-indicator');
+            const tokenUsageEl = document.getElementById('token-usage');
+            const responseTimeEl = document.getElementById('response-time');
+            const modelNameEl = document.getElementById('model-name');
+            
+            // 添加示例消息
+            // addMessage('你好，请介绍一下你自己', 'user');
+            
+            // 发送消息函数
+            async function sendMessage() {
+                const message = userInput.value.trim();
+                if (!message) return;
+                
+                // 添加用户消息
+                addMessage(message, 'user');
+                userInput.value = '';
+                
+                // 显示正在输入指示器
+                typingIndicator.style.display = 'block';
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                const startTime = Date.now();
+                let tokenCount = 0;
+                
+                try {
+                    if (streamToggle.checked) {
+                        // 流式输出模式
+                        await streamResponse(message);
+                    } else {
+                        // 普通输出模式
+                        await normalResponse(message);
+                    }
+                    
+                    const endTime = Date.now();
+                    responseTimeEl.textContent = endTime - startTime;
+                } catch (error) {
+                    console.error('Error:', error);
+                    addMessage(`请求出错: ${error.message}`, 'ai');
+                } finally {
+                    typingIndicator.style.display = 'none';
+                }
+            }
+            
+            // 流式响应处理
+            async function streamResponse(message) {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message, stream: 1 })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let accumulatedContent = '';
+                let aiMessageElement = null;
+                let buffer = '';
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    
+                    // 最后一行可能是不完整的，保留在 buffer 中
+                    buffer = lines.pop();
+                    
+                    for (const line of lines) {
+                        if (line.trim() === '') continue;
+                        try {
+                            const data = JSON.parse(line);
+                            
+                            // 更新模型名称
+                            if (data.model) {
+                                modelNameEl.textContent = data.model;
+                            }
+                            
+                            // 处理流式 chunk 或者 错误返回
+                            let content = '';
+                            if (data.reply) {
+                                content = data.reply;
+                            } else if (data.choices && data.choices.length > 0) {
+                                if (data.choices[0].delta && data.choices[0].delta.content) {
+                                    content = data.choices[0].delta.content;
+                                } else if (data.choices[0].message && data.choices[0].message.content) {
+                                    content = data.choices[0].message.content;
+                                }
+                            }
+
+                            if (content) {
+                                accumulatedContent += content;
+                                
+                                if (!aiMessageElement) {
+                                    aiMessageElement = createMessageElement('', 'ai');
+                                    chatContainer.appendChild(aiMessageElement);
+                                }
+                                
+                                aiMessageElement.innerHTML = formatMessage(accumulatedContent);
+                            }
+
+                            if (data.model) {
+                                modelNameEl.textContent = data.model;
+                            }
+                            
+                            if (data.usage) {
+                                tokenUsageEl.textContent = data.usage.total_tokens;
+                            }
+
+                            if (data.error) {
+                                addMessage(`Error: ${data.error.message || JSON.stringify(data.error)}`, 'ai');
+                            }
+                            
+                            chatContainer.scrollTop = chatContainer.scrollHeight;
+                        } catch (e) {
+                            console.error('Error parsing JSON:', e, 'Line:', line);
+                        }
+                    }
+                }
+            }
+            
+            // 普通响应处理
+            async function normalResponse(message) {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message, stream: 0 })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // 因为后端使用了 Chunked 传输，所以 fetch 的 response.json() 可能没法直接处理带换行的文本
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let resultText = '';
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    resultText += decoder.decode(value);
+                }
+
+                const data = JSON.parse(resultText.trim());
+                
+                // 更新模型名称
+                if (data.model) {
+                    modelNameEl.textContent = data.model;
+                }
+                
+                if (data.reply) {
+                    const content = data.reply;
+                    addMessage(content, 'ai');
+                    
+                    if (data.usage) {
+                        tokenUsageEl.textContent = data.usage.total_tokens;
+                    }
+                } else if (data.error) {
+                    addMessage(`Error: ${data.error.message || JSON.stringify(data.error)}`, 'ai');
+                }
+            }
+            
+            // 添加消息到聊天框
+            function addMessage(content, sender) {
+                const messageElement = createMessageElement(content, sender);
+                chatContainer.appendChild(messageElement);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            // 创建消息元素
+            function createMessageElement(content, sender) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                
+                if (sender === 'user') {
+                    messageElement.classList.add('user-message');
+                    messageElement.innerHTML = `${content}`;
+                } else {
+                    messageElement.classList.add('ai-message');
+                    messageElement.innerHTML = formatMessage(content);
+                }
+                
+                return messageElement;
+            }
+            
+            // 格式化消息（简单处理换行）
+            function formatMessage(text) {
+                return text.replace(/\n/g, '<br>');
+            }
+            
+            // 事件监听
+            sendBtn.addEventListener('click', sendMessage);
+            
+            userInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // 模拟初始token使用
+            tokenUsageEl.textContent = '0';
+        });
+    </script>
+</body>
+</html>
