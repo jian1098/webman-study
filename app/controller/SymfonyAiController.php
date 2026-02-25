@@ -13,6 +13,7 @@ use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\AI\Platform\Message\MessageBag;
+use Workerman\Protocols\Http\Chunk;
 
 // 不同的模型要安装对应模型的扩展，并引用对应的PlatformFactory，自定义模型用Ollama\PlatformFactory,通用平台用Generic\PlatformFactory
 // 支持的模型列表：https://symfony.com/doc/current/ai/components/platform.html#custom-models
@@ -59,7 +60,7 @@ class SymfonyAIController
     // 聊天页面
     public function chat(Request $request)
     {
-        return view('index/chat2');
+        return view('index/symfony_chat');
     }
 
     // 聊天接口
@@ -117,6 +118,9 @@ class SymfonyAIController
     // 流式返回
     public function chatWithStream($message)
     {
+        $request = request();
+        $connection = $request->connection;
+
         // 构建消息
         $messages = new MessageBag(
             // 系统提示
@@ -129,17 +133,36 @@ class SymfonyAIController
         );
 
         try {
-            // 调用模型（同步）
+            // 先发送响应头
+            $connection->send(response('', 200, [
+                'Transfer-Encoding' => 'chunked',
+                'Content-Type' => 'application/json',
+                'Cache-Control' => 'no-cache',
+                'Connection' => 'keep-alive',
+            ]));
+
             $response = $this->platform->invoke(
                 $this->model,
                 $messages,
                 [
+                    'stream' => true,
+                    'stream_options' => ['include_usage' => true],
                     'temperature' => 0.7,
+                    'max_output_tokens' => 100,
                 ]
             );
-            return json([
-                'reply' => $response->getResult()->getContent(),
-            ]);
+
+            // Symfony AI 返回的是一个 Generator
+            foreach ($response->asStream() as $word) {
+                // 使用 Webman 的 Chunk 协议发送数据到前端
+                $connection->send(new Chunk(json_encode([
+                    'reply' => $word,
+                    // 'model' => $this->model,
+                ], JSON_UNESCAPED_UNICODE) . "\n"));
+            }
+
+            // 发送空内容表示传输结束
+            $connection->send(new Chunk(''));
         } catch (\Exception $e) {
             return json([
                 'error' => $e->getMessage(),
@@ -161,6 +184,18 @@ class SymfonyAIController
             curl_setopt($ch, \CURLOPT_HTTP_VERSION, \CURL_HTTP_VERSION_1_1);
             curl_setopt($ch, \CURLOPT_SSL_VERIFYPEER, false); // For debugging, usually true
 
+            // Capture response headers
+            $responseHeaders = [];
+            curl_setopt($ch, \CURLOPT_HEADERFUNCTION, function ($curl, $header) use (&$responseHeaders) {
+                $len = strlen($header);
+                $header = explode(':', $header, 2);
+                if (count($header) < 2) { // ignore invalid headers
+                    return $len;
+                }
+                $responseHeaders[strtolower(trim($header[0]))][] = trim($header[1]);
+                return $len;
+            });
+
             $content = curl_exec($ch);
             if (curl_errno($ch)) {
                 return new MockResponse(json_encode(['error' => curl_error($ch)]), ['http_code' => 500]);
@@ -168,7 +203,10 @@ class SymfonyAIController
             $statusCode = curl_getinfo($ch, \CURLINFO_HTTP_CODE);
             curl_close($ch);
 
-            return new MockResponse($content, ['http_code' => $statusCode]);
+            return new MockResponse($content, [
+                'http_code' => $statusCode,
+                'response_headers' => $responseHeaders,
+            ]);
         });
     }
 

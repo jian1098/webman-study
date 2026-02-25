@@ -427,29 +427,37 @@
                             }
                             
                             // 处理流式 chunk 或者 错误返回
-                            if (data.choices && data.choices.length > 0) {
-                                let content = '';
+                            let content = '';
+                            if (data.reply) {
+                                content = data.reply;
+                            } else if (data.choices && data.choices.length > 0) {
                                 if (data.choices[0].delta && data.choices[0].delta.content) {
                                     content = data.choices[0].delta.content;
                                 } else if (data.choices[0].message && data.choices[0].message.content) {
                                     content = data.choices[0].message.content;
                                 }
+                            }
 
-                                if (content) {
-                                    accumulatedContent += content;
-                                    
-                                    if (!aiMessageElement) {
-                                        aiMessageElement = createMessageElement('', 'ai');
-                                        chatContainer.appendChild(aiMessageElement);
-                                    }
-                                    
-                                    aiMessageElement.innerHTML = formatMessage(accumulatedContent);
+                            if (content) {
+                                accumulatedContent += content;
+                                
+                                if (!aiMessageElement) {
+                                    aiMessageElement = createMessageElement('', 'ai');
+                                    chatContainer.appendChild(aiMessageElement);
                                 }
                                 
-                                if (data.usage) {
-                                    tokenUsageEl.textContent = data.usage.total_tokens;
-                                }
-                            } else if (data.error) {
+                                aiMessageElement.innerHTML = formatMessage(accumulatedContent);
+                            }
+
+                            if (data.model) {
+                                modelNameEl.textContent = data.model;
+                            }
+                            
+                            if (data.usage) {
+                                tokenUsageEl.textContent = data.usage.total_tokens;
+                            }
+
+                            if (data.error) {
                                 addMessage(`Error: ${data.error.message || JSON.stringify(data.error)}`, 'ai');
                             }
                             
