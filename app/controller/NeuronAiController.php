@@ -3,6 +3,9 @@
 namespace app\controller;
 
 use app\agent\OpenAIAgent;
+use NeuronAI\Chat\Enums\SourceType;
+use NeuronAI\Chat\Messages\ContentBlocks\FileContent;
+use NeuronAI\Chat\Messages\ContentBlocks\ImageContent;
 use NeuronAI\Chat\Messages\UserMessage;
 use support\Request;
 use Workerman\Connection\TcpConnection;
@@ -32,7 +35,7 @@ class NeuronAiController
         $message = $request->input('message');
         $stream = $request->input('stream');
         if ($message == '') {
-            return json(['code' => 500, 'msg' => '请输入内容']);
+            return json(['code' => 500, 'reply' => '请输入内容']);
         }
         return $stream ? $this->chatWithStream($connection, $message) : $this->chatWithoutStream($connection, $message);
     }
@@ -113,7 +116,26 @@ class NeuronAiController
     public function chatWithoutStream($connection, $message)
     {
         try {
-            $reply = $this->agent->make()->chat(new UserMessage($message));
+            // 定义文本消息
+            $message = new UserMessage($message);
+            // 定义图片消息内容,需要支持图片识别的大模型
+            // $message->addContent(
+            //     new ImageContent(
+            //                 content: 'https://img-home.csdnimg.cn/images/20201124032511.png',
+            //                 sourceType: SourceType::URL,
+            //                 mediaType: 'image/png'
+            //             )
+            // );
+            // 定义文件消息内容
+            // $message->addContent(
+            //     new FileContent(
+            //         content: base64_encode(file_get_contents(__DIR__.'/invoice.pdf')),
+            //         sourceType: SourceType::BASE64,
+            //         mediaType: 'application/pdf'
+            //     )
+            // );
+
+            $reply = $this->agent->make()->chat($message);
             $usage = $reply->getUsage();
             $totalUsage = $usage ? $usage->getTotal() : 0;
             $connection->send(json_encode([

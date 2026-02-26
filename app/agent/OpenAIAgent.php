@@ -1,7 +1,6 @@
 <?php
 /**
  * @desc OpenAI大模型服务提供
- * @author Tinywan(ShaoBo Wan)
  */
 declare(strict_types=1);
 namespace app\agent;
@@ -39,7 +38,7 @@ class OpenAIAgent extends Agent
         );
     }
     /**
-     * @desc instructions
+     * @desc instructions系统指令
      */
     public function instructions(): string
     {
