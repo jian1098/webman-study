@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "48caf52687f2388e08b59c3740faf999",
+    "content-hash": "3a03275b0e1f46cd5ceebb3047002886",
     "packages": [
         {
             "name": "doctrine/deprecations",
@@ -646,16 +646,16 @@
         },
         {
             "name": "neuron-core/neuron-ai",
-            "version": "2.8.12",
+            "version": "3.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/neuron-core/neuron-ai.git",
-                "reference": "44bab85d92bf162898ee48d0bcef6ba0d29b59c9"
+                "reference": "44ac2afbf69e658d1c78fd5ed481f4f1993e5a34"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/neuron-core/neuron-ai/zipball/44bab85d92bf162898ee48d0bcef6ba0d29b59c9",
-                "reference": "44bab85d92bf162898ee48d0bcef6ba0d29b59c9",
+                "url": "https://api.github.com/repos/neuron-core/neuron-ai/zipball/44ac2afbf69e658d1c78fd5ed481f4f1993e5a34",
+                "reference": "44ac2afbf69e658d1c78fd5ed481f4f1993e5a34",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -668,8 +668,7 @@
                 "guzzlehttp/guzzle": "^7.9",
                 "inspector-apm/inspector-php": "^3.15.10",
                 "php": "^8.1",
-                "psr/http-message": "^1.0|^2.0",
-                "psr/log": "^1.0|^2.0|^3.0"
+                "psr/http-message": "^1.0|^2.0"
             },
             "require-dev": {
                 "aws/aws-sdk-php": "^3.209",
@@ -689,6 +688,7 @@
                 "aws/aws-sdk-php": "^3.209",
                 "elasticsearch/elasticsearch": "^7.0|^8.0",
                 "php-http/curl-client": "^2.3",
+                "psr/log": "^1.0|^2.0|^3.0",
                 "spatie/fork": "^1.2",
                 "symfony/process": "^4.0|^5.0|^6.0|^7.0",
                 "typesense/typesense-php": "^5.0"
@@ -715,9 +715,9 @@
             "description": "The PHP Agentic Framework.",
             "support": {
                 "issues": "https://github.com/neuron-core/neuron-ai/issues",
-                "source": "https://github.com/neuron-core/neuron-ai/tree/2.8.12"
+                "source": "https://github.com/neuron-core/neuron-ai/tree/3.x"
             },
-            "time": "2025-11-24T18:52:39+00:00"
+            "time": "2025-12-09T18:43:49+00:00"
         },
         {
             "name": "nikic/fast-route",

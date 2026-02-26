@@ -44,23 +44,26 @@ class NeuronAiController
         return view('index/neuron_chat');
     }
 
+    // 流式输出
     public function chatWithStream($connection, $message)
     {
         $id = Timer::add(0.01, function () use ($connection, &$id, $message) {
-            Timer::del($id);
+            if ($id !== null) {
+                Timer::del($id);
+            }
             if ($connection->getStatus() !== TcpConnection::STATUS_ESTABLISHED) {
                 return;
             }
 
             try {
-                $stream = $this->agent->make()->stream(
+                $handler = $this->agent->make()->stream(
                     new UserMessage($message)
                 );
-                foreach ($stream as $chunk) {
+                foreach ($handler as $chunk) {
                     // Neuron AI yields JSON strings for usage and regular strings for content
                     $content = $chunk;
                     if (!is_string($chunk)) {
-                        $content = $chunk->getContent();
+                        $content = $chunk->content;
                     }
 
                     if (empty($content)) {
@@ -75,7 +78,7 @@ class NeuronAiController
                 }
 
                 // 获取流结束后的最终响应对象，其中包含累计消耗
-                $response = $stream->getReturn();
+                $response = $handler->getReturn();
                 $usage = $response->getUsage();
                 $totalUsage = $usage ? $usage->getTotal() : 0;
 
@@ -106,6 +109,7 @@ class NeuronAiController
         ]);
     }
 
+    // 非流式输出
     public function chatWithoutStream($connection, $message)
     {
         try {

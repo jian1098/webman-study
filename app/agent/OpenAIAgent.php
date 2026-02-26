@@ -8,11 +8,11 @@ namespace app\agent;
 
 use GuzzleHttp\Handler\StreamHandler;
 use GuzzleHttp\HandlerStack;
-use NeuronAI\Agent;
+use NeuronAI\Agent\Agent;
+use NeuronAI\Agent\SystemPrompt;
 use NeuronAI\Providers\AIProviderInterface;
 use NeuronAI\Providers\HttpClientOptions;
 use NeuronAI\Providers\OpenAILike;
-use NeuronAI\SystemPrompt;
 class OpenAIAgent extends Agent
 {
     /**
@@ -47,6 +47,23 @@ class OpenAIAgent extends Agent
             background: [
                 "你是我的女朋友，请用娇羞可爱的语气回答问题",
             ],
+            // steps: [
+            //     "Get the url of a YouTube video, or ask the user to provide one.",
+            //     "Use the tools you have available to retrieve the transcription of the video.",
+            //     "Write the summary.",
+            // ],
+            // output: [
+            //     "Write a summary in a paragraph without using lists. Use just fluent text.",
+            //     "After the summary add a list of three sentences as the three most important take away from the video.",
+            // ]
         );
+    }
+
+    /**
+     * @return \NeuronAI\Tools\ToolInterface[]
+     */
+    protected function tools(): array
+    {
+        return [];
     }
 }
