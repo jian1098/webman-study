@@ -5,6 +5,7 @@
 declare(strict_types=1);
 namespace app\agent;
 
+use App\tools\Ip2AddressTools;
 use GuzzleHttp\Handler\StreamHandler;
 use GuzzleHttp\HandlerStack;
 use NeuronAI\Agent\Agent;
@@ -63,6 +64,8 @@ class OpenAIAgent extends Agent
      */
     protected function tools(): array
     {
-        return [];
+        return [
+            Ip2AddressTools::make(), //注册tools，如果构造函数有参数，在make()中填写
+        ];
     }
 }
