@@ -136,14 +136,14 @@ class NeuronAiController
             //     )
             // );
 
-            // $reply = $this->agent->make()->chat($message); // 普通聊天
-            $person = $this->agent->make()->structured($message, PersonOutput::class); // 结构化输出聊天
-            // $usage = $person->getUsage();
-            // $totalUsage = $usage ? $usage->getTotal() : 0;
+            $reply = $this->agent->make()->chat($message); // 普通聊天
+            // $person = $this->agent->make()->structured($message, PersonOutput::class); // 结构化输出聊天
+            $usage = $reply->getUsage();
+            $totalUsage = $usage ? $usage->getTotal() : 0;
             $connection->send(json_encode([
-                'reply' => $person->name . '的爱好是' . $person->preference,
+                'reply' => $reply->getContent(),
                 'model' => getenv('AI_MODEL'),
-                'usage' => 0,
+                'usage' => $totalUsage,
             ], JSON_UNESCAPED_UNICODE));
         } catch (\Exception $e) {
             $connection->send(json_encode([

@@ -13,6 +13,7 @@ use NeuronAI\Agent\SystemPrompt;
 use NeuronAI\Chat\History\ChatHistoryInterface;
 use NeuronAI\Chat\History\FileChatHistory;
 use NeuronAI\Chat\History\InMemoryChatHistory;
+use NeuronAI\MCP\McpConnector;
 use NeuronAI\Providers\AIProviderInterface;
 use NeuronAI\Providers\HttpClientOptions;
 use NeuronAI\Providers\OpenAILike;
@@ -33,7 +34,10 @@ class OpenAIAgent extends Agent
             baseUri: getenv('AI_API_URL'),
             key: getenv('AI_API_KEY'),
             model: getenv('AI_MODEL'),
-            parameters: [], // Add custom params (temperature, logprobs, etc)
+            parameters: [
+                'temperature' => 0.7,
+                'max_output_tokens' => 2048,
+            ], // Add custom params (temperature, logprobs, etc)
             strict_response: false, // Strict structured output
             httpOptions: new HttpClientOptions(
                 timeout: 30,
@@ -48,7 +52,7 @@ class OpenAIAgent extends Agent
     {
         return (string) new SystemPrompt(
             background: [
-                // "你是我的女朋友，请用娇羞可爱的语气回答问题",
+                "请用最快的速度回答问题，不要输出思考过程，直接给出答案，答案尽量简单明了",
             ],
             // steps: [
             //     "Get the url of a YouTube video, or ask the user to provide one.",
@@ -68,38 +72,54 @@ class OpenAIAgent extends Agent
     protected function tools(): array
     {
         return [
-            Ip2AddressTools::make(), //注册tools，如果构造函数有参数，在make()中填写
+            // Ip2AddressTools::make(), //注册tools，如果构造函数有参数，在make()中填写
+            
+            // 本地MCP服务
+            // ...McpConnector::make([
+            //     'command' => 'npx',
+            //     'args' => ["-y", "@liushoukai/rust-mcp-client"],
+            // ])->tools(),
+
+            // 远程MCP
+            // ...McpConnector::make([
+            //     'url' => 'https://mcp.example.com',
+            //     'token' => 'BEARER_TOKEN',
+            //     'timeout' => 30,
+            //     'headers' => [
+            //         //'x-cutom-header' => 'value'
+            //     ]
+            // ])->tools(),
         ];
     }
 
     // 历史聊天记录
-    protected function chatHistory(): ChatHistoryInterface
-    {
-        // 默认使用内存存储，只在当前请求有效，ai回复后就失效了
-        // return new InMemoryChatHistory(
-        //     contextWindow: 50000 // 最大存储token数，默认值是50000，可以根据需要修改
-        // );
+    // protected function chatHistory(): ChatHistoryInterface
+    // {
+    // 默认使用内存存储，只在当前请求有效，ai回复后就失效了
+    // return new InMemoryChatHistory(
+    //     contextWindow: 50000 // 最大存储token数，默认值是50000，可以根据需要修改
+    // );
 
-        // 文件存储，可以持久化和恢复记录，需要配置目录
-        return new FileChatHistory(
-            directory: '/app/runtime/logs/neuron',
-            key: 'USER_ID', // key用于区分不同的用户或会话记录，必须是唯一的
-            contextWindow: 50000
-        );
+    // 文件存储，可以持久化和恢复记录，需要配置目录
+    // return new FileChatHistory(
+    //     directory: '/app/runtime/logs/neuron',
+    //     key: 'USER_ID', // key用于区分不同的用户或会话记录，必须是唯一的
+    //     contextWindow: 50000
+    // );
 
-        // 数据库存储，需要配置数据库和创建表
-        // return new SQLChatHistory(
-        //     thread_id: 'THREAD_ID',
-        //     pdo: new \PDO("mysql:host=localhost;dbname=DB_NAME;charset=utf8mb4", "DB_USER", "DB_PASS"),
-        //     table: 'chat_hisotry',
-        //     contextWindow: 50000
-        // );
+    // 数据库存储，需要配置数据库和创建表
+    // return new SQLChatHistory(
+    //     thread_id: 'THREAD_ID',
+    //     pdo: new \PDO("mysql:host=localhost;dbname=DB_NAME;charset=utf8mb4", "DB_USER", "DB_PASS"),
+    //     table: 'chat_hisotry',
+    //     contextWindow: 50000
+    // );
 
-        // ORM模型存储，需要创建ChatMessage模型和表
-        // return new EloquentChatHistory(
-        //     thread_id: 'THREAD_ID',
-        //     modelClass: ChatMessage::class,
-        //     contextWindow: 100000
-        // );
-    }
+    // ORM模型存储，需要创建ChatMessage模型和表
+    // return new EloquentChatHistory(
+    //     thread_id: 'THREAD_ID',
+    //     modelClass: ChatMessage::class,
+    //     contextWindow: 100000
+    // );
+    // }
 }
