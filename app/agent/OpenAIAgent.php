@@ -95,7 +95,7 @@ class OpenAIAgent extends Agent
         //     contextWindow: 50000
         // );
 
-        // ORM模型存储，需要创建模型和表
+        // ORM模型存储，需要创建ChatMessage模型和表
         // return new EloquentChatHistory(
         //     thread_id: 'THREAD_ID',
         //     modelClass: ChatMessage::class,

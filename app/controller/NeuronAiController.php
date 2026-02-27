@@ -3,6 +3,7 @@
 namespace app\controller;
 
 use app\agent\OpenAIAgent;
+use app\output\PersonOutput;
 use NeuronAI\Chat\Enums\SourceType;
 use NeuronAI\Chat\Messages\ContentBlocks\FileContent;
 use NeuronAI\Chat\Messages\ContentBlocks\ImageContent;
@@ -135,13 +136,14 @@ class NeuronAiController
             //     )
             // );
 
-            $reply = $this->agent->make()->chat($message);
-            $usage = $reply->getUsage();
-            $totalUsage = $usage ? $usage->getTotal() : 0;
+            // $reply = $this->agent->make()->chat($message); // 普通聊天
+            $person = $this->agent->make()->structured($message, PersonOutput::class); // 结构化输出聊天
+            // $usage = $person->getUsage();
+            // $totalUsage = $usage ? $usage->getTotal() : 0;
             $connection->send(json_encode([
-                'reply' => $reply->getContent(),
+                'reply' => $person->name . '的爱好是' . $person->preference,
                 'model' => getenv('AI_MODEL'),
-                'usage' => $totalUsage,
+                'usage' => 0,
             ], JSON_UNESCAPED_UNICODE));
         } catch (\Exception $e) {
             $connection->send(json_encode([
